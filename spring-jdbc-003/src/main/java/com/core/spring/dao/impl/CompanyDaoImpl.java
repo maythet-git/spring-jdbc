@@ -9,6 +9,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import com.core.spring.dao.CompanyDao;
@@ -25,39 +27,39 @@ public class CompanyDaoImpl implements CompanyDao {
 	private CompanyMapper companyMapper;
 
 	@Override
-	public void save(Company company) {
+	public Integer save(Company company) {
 
 		StringBuilder sb = new StringBuilder();
 		sb.append(" INSERT");
 		sb.append(" INTO");
 		sb.append(" COMPANY");
 		sb.append(" (");
-		sb.append(" id");
-		sb.append(" ,name");
+		sb.append(" name");
 		sb.append(" ,address");
 		sb.append(" ,phone");
 		sb.append(" )");
 		sb.append(" VALUES");
 		sb.append(" (");
-		sb.append(" :id");
-		sb.append(" ,:name");
+		sb.append(" :name");
 		sb.append(" ,:address");
 		sb.append(" ,:phone");
 		sb.append(" )");
 
 		String sql = sb.toString();
 
-		System.out.println(sql);
-
 		Map<String, Object> params = new HashMap<String, Object>();
-		params.put("id", company.getId());
 		params.put("name", company.getName());
 		params.put("address", company.getAddress());
 		params.put("phone", company.getPhone());
 
 		SqlParameterSource paramSource = new MapSqlParameterSource(params);
-		jdbcTemplate.update(sql, paramSource);
-
+		
+		KeyHolder keyHolder = new GeneratedKeyHolder();
+		jdbcTemplate.update(sql, paramSource, keyHolder);
+		
+		int returnKey = keyHolder.getKey().intValue();
+		
+		return returnKey;
 	}
 
 	@Override
@@ -72,8 +74,6 @@ public class CompanyDaoImpl implements CompanyDao {
 		sb.append(" id = :id");
 
 		String sql = sb.toString();
-
-		System.out.println(sql);
 
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("id", id);
@@ -100,8 +100,6 @@ public class CompanyDaoImpl implements CompanyDao {
 		
 		String sql = sb.toString();
 		
-		System.out.println(sql);
-		
 		// @formatter:off
 		SqlParameterSource paramSource = new MapSqlParameterSource()
 		.addValue("name", company.getName())
@@ -125,8 +123,6 @@ public class CompanyDaoImpl implements CompanyDao {
 
 		String sql = sb.toString();
 
-		System.out.println(sql);
-
 		SqlParameterSource paramSource = new MapSqlParameterSource().addValue("id", id);
 		jdbcTemplate.update(sql, paramSource);
 
@@ -140,8 +136,6 @@ public class CompanyDaoImpl implements CompanyDao {
 		sb.append(" COMPANY");
 
 		String sql = sb.toString();
-
-		System.out.println(sql);
 
 		SqlParameterSource paramSource = new MapSqlParameterSource();
 		jdbcTemplate.update(sql, paramSource);
@@ -158,30 +152,7 @@ public class CompanyDaoImpl implements CompanyDao {
 
 		String sql = sb.toString();
 
-		System.out.println(sql);
-
 		List<Company> list = jdbcTemplate.query(sql, companyMapper);
 		return list;
 	}
-
-	/**
-	 *
-	 */
-	@Override
-	public Integer getCount() {
-
-		StringBuilder sb = new StringBuilder();
-		sb.append(" SELECT");
-		sb.append(" COUNT(*)");
-		sb.append(" FROM");
-		sb.append(" COMPANY");
-
-		String sql = sb.toString();
-
-		System.out.println(sql);
-
-		Integer count = jdbcTemplate.queryForObject(sql, new MapSqlParameterSource(), Integer.class);
-		return count;
-	}
-
 }
